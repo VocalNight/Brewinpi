@@ -3,6 +3,7 @@
     <mat-form-field>
       <mat-label>Name</mat-label>
       <input 
+        id="name"
         #name="ngModel" 
         required="true" 
         matInput 
@@ -11,10 +12,6 @@
         [(ngModel)]="wholesaler.name" 
         value="">
     </mat-form-field>
-    <div [hidden]="name.valid || name.pristine"
-             class="alert alert-danger">
-          Name is required
-        </div>
 
     <button [hidden]="wholesaler.id != 0" mat-raised-button color="primary"
       type="submit"

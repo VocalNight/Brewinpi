@@ -41,18 +41,11 @@ describe('BreweryEditComponent', () => {
     name.dispatchEvent(new Event('input'));
     fixture.detectChanges();
 
-    console.log(name);
-    console.log(name.value);
-
     expect(form.classList.contains('ng-valid')).toBeTruthy();
-
 
     name.value = '';
     name.dispatchEvent(new Event('input'));
     fixture.detectChanges();
-
-    console.log(name);
-    console.log(name.value);
 
     expect(form.classList.contains('ng-invalid')).toBeTruthy();
   })
