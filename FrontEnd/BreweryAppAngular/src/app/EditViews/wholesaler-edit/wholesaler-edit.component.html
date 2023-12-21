@@ -1,0 +1,26 @@
+<form (ngSubmit)="onSubmit()" #brewForm="ngForm" class="example-form">
+
+    <mat-form-field>
+      <mat-label>Name</mat-label>
+      <input 
+        #name="ngModel" 
+        required="true" 
+        matInput 
+        placeholder="" 
+        name="name" 
+        [(ngModel)]="wholesaler.name" 
+        value="">
+    </mat-form-field>
+    <div [hidden]="name.valid || name.pristine"
+             class="alert alert-danger">
+          Name is required
+        </div>
+
+    <button [hidden]="wholesaler.id != 0" mat-raised-button color="primary"
+      type="submit"
+      [disabled]="!brewForm.form.valid || isButtonDisabled">Create</button>
+
+      <button [hidden]="this.wholesaler.id == 0" mat-raised-button color="primary"
+      type="submit"
+      [disabled]="!brewForm.form.valid || isButtonDisabled">Update</button>
+</form>
