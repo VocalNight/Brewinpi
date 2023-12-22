@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BreweryApi.Models;
-using BreweryApi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,12 +14,10 @@ namespace BreweryApi.Controllers
     public class BreweriesController : ControllerBase
     {
         private readonly BreweryContext _context;
-        private readonly BreweryService _breweryService;
 
-        public BreweriesController(BreweryContext context, BreweryService breweryService)
+        public BreweriesController(BreweryContext context)
         {
             _context = context;
-            _breweryService = breweryService;
         }
 
         // GET: api/Breweries

@@ -1,5 +1,4 @@
 using BreweryApi.Models;
-using BreweryApi.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,16 +7,18 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddDbContext<BreweryContext>(opt =>
-opt.UseSqlServer(builder.Configuration.GetConnectionString("BreweryDatabase")));// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+opt.UseSqlServer(builder.Configuration.GetConnectionString("BreweryDatabase")));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped<BreweryService>();
+//This is how you add extra more DI's through application
+//builder.Services.AddScoped<BreweryService>();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngularDev", builder =>
     {
-        builder.WithOrigins("http://localhost:4200") // Update with your Angular app's URL
+        builder.WithOrigins("http://localhost:4200")
                .AllowAnyHeader()
                .AllowAnyMethod();
     });
