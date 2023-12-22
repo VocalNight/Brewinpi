@@ -5,6 +5,7 @@ import {MatInputModule} from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatButtonModule} from '@angular/material/button';
+import {MatSnackBar} from '@angular/material/snack-bar';
 import { BreweryClass } from '../../Models/BreweryModel';
 import { BreweryInfoService } from '../../Services/brewery-info.service';
 import { BreweryPostService } from '../../Services/brewery-post.service';
@@ -27,7 +28,7 @@ export class BrewEditComponent {
     id: 0,
     name: '',
     flavour: '',
-    age: 0,
+    age: '',
     breweryId: 1,
     breweryPrice: 0,
     brewery: undefined
@@ -36,6 +37,12 @@ export class BrewEditComponent {
   onSubmit() {
 
     this.isButtonDisabled = true;
+
+    if (this.beer.breweryPrice <= 0) {
+      this._snackBar.open('You cant add a beer without price!');
+      this.isButtonDisabled = false;
+      return;
+    }
 
     if (this.beer.id != 0) {
       delete this.beer.brewery;
@@ -52,7 +59,7 @@ export class BrewEditComponent {
       1000);
   }
 
-  constructor(private breweryInfoService: BreweryInfoService, private breweryPostService: BreweryPostService, private route: Router) {
+  constructor(private breweryInfoService: BreweryInfoService, private breweryPostService: BreweryPostService, private route: Router, private _snackBar: MatSnackBar) {
     this.breweryInfoService.getInfo('Breweries').subscribe((result) => {
       this.breweries = result;
     });
