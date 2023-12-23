@@ -14,9 +14,9 @@ namespace BreweryApi.Repositories
             _context = context;
         }
 
-        public void DeleteBrewery( Beer beer )
+        public void DeleteBrewery( Brewery brewery )
         {
-            _context.Beer.Remove(beer);
+            _context.Brewery.Remove(brewery);
             Save();
         }
 

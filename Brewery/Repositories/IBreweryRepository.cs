@@ -8,7 +8,7 @@ namespace BreweryApi.Repositories
         IEnumerable<Brewery> getBreweries();
         Brewery getBreweryByID(int id);
         void InsertBrewery(Brewery brewery);
-        void DeleteBrewery(Beer beer);
+        void DeleteBrewery(Brewery brewery);
         void UpdateBrewery( Brewery brewery );
         void Save();
     }

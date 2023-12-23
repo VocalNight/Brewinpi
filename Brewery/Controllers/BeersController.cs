@@ -110,7 +110,6 @@ namespace BreweryApi.Controllers
         public async Task<ActionResult<Beer>> PostBeer(Beer beer)
         {
 
-
             Brewery brewery = await _context.Brewery.FindAsync(beer.BreweryId);
             if (brewery != null)
             {
