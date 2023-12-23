@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using BreweryApi.Models;
-using Microsoft.AspNetCore.Http;
+﻿using BreweryApi.Models;
+using BreweryApi.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,22 +9,22 @@ namespace BreweryApi.Controllers
     [ApiController]
     public class BreweriesController : ControllerBase
     {
-        private readonly BreweryContext _context;
+        private IBreweryRepository _breweryRepository;
 
-        public BreweriesController(BreweryContext context)
+        public BreweriesController( IBreweryRepository breweryRepository )
         {
-            _context = context;
+            _breweryRepository = breweryRepository;
         }
 
         // GET: api/Breweries
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Brewery>>> GetBrewery()
         {
-            var Breweries = await _context.Brewery.ToListAsync();
+            List<Brewery> Breweries = (List<Brewery>)_breweryRepository.getBreweries();
 
             foreach(var brewery in Breweries)
             {
-                brewery.Beers = _context.Beer.Where(b => b.BreweryId == brewery.Id).ToList();
+                brewery.Beers = (ICollection<Beer>)_breweryRepository.GetBreweryBeers(brewery);
             }
 
             return Breweries;
@@ -38,9 +34,8 @@ namespace BreweryApi.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Brewery>> GetBrewery(int id)
         {
-            var brewery = await _context.Brewery.FindAsync(id);
-            brewery.Beers = _context.Beer.Where(b => b.BreweryId == id).ToList();
-            
+            var brewery = _breweryRepository.getBreweryByID(id);
+            brewery.Beers = (ICollection<Beer>)_breweryRepository.GetBreweryBeers(brewery);
 
             if (brewery == null)
             {
@@ -60,15 +55,15 @@ namespace BreweryApi.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(brewery).State = EntityState.Modified;
+            _breweryRepository.UpdateBrewery(brewery);
 
             try
             {
-                await _context.SaveChangesAsync();
+                _breweryRepository.SaveAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!BreweryExists(id))
+                if (!_breweryRepository.BreweryExists(id))
                 {
                     return NotFound();
                 }
@@ -86,8 +81,7 @@ namespace BreweryApi.Controllers
         [HttpPost]
         public async Task<ActionResult<Brewery>> PostBrewery(Brewery brewery)
         {
-            _context.Brewery.Add(brewery);
-            await _context.SaveChangesAsync();
+            _breweryRepository.InsertBrewery(brewery);
 
             return CreatedAtAction("GetBrewery", new { id = brewery.Id }, brewery);
         }
@@ -96,21 +90,15 @@ namespace BreweryApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBrewery(int id)
         {
-            var brewery = await _context.Brewery.FindAsync(id);
+            var brewery = _breweryRepository.getBreweryByID(id);
             if (brewery == null)
             {
                 return NotFound();
             }
 
-            _context.Brewery.Remove(brewery);
-            await _context.SaveChangesAsync();
+            _breweryRepository.DeleteBrewery(brewery);
 
             return NoContent();
-        }
-
-        private bool BreweryExists(int id)
-        {
-            return _context.Brewery.Any(e => e.Id == id);
         }
     }
 }

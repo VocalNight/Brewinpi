@@ -14,16 +14,26 @@ namespace BreweryApi.Repositories
             _context = context;
         }
 
+        public bool BreweryExists( int id )
+        {
+            return _context.Brewery.Any(e => e.Id == id);
+        }
+
         public void DeleteBrewery( Brewery brewery )
         {
             _context.Brewery.Remove(brewery);
-            Save();
+            SaveAsync();
         }
 
 
         public IEnumerable<Brewery> getBreweries()
         {
             return _context.Brewery.ToList();
+        }
+
+        public IEnumerable<Beer> GetBreweryBeers( Brewery brewery )
+        {
+            return _context.Beer.Where(b => b.BreweryId == brewery.Id).ToList();
         }
 
         public Brewery getBreweryByID( int id )

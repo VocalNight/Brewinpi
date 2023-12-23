@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BreweryApi.Models;
-using BreweryApi.Services;
 using BreweryApi.Models.DTOs;
+using BreweryApi.Repositories;
 
 namespace BreweryApi.Controllers
 {
@@ -10,25 +10,25 @@ namespace BreweryApi.Controllers
     [ApiController]
     public class BeersController : ControllerBase
     {
-        private readonly BreweryContext _context;
-        private readonly BreweryService _breweryService;
+        private readonly IBeerRepository _beerRepository;
+        private readonly IBreweryRepository _breweryRepository;
 
-        public BeersController(BreweryContext context, BreweryService breweryService)
+        public BeersController(IBeerRepository beerRepository, IBreweryRepository breweryRepository)
         {
-            _context = context;
-            _breweryService = breweryService;
+            _beerRepository = beerRepository;
+            _breweryRepository = breweryRepository;
         }
 
         // GET: api/Beers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<BeerDTO>>> GetBeer()
         {
-            var beers = await _context.Beer.ToListAsync();
+            var beers = _beerRepository.getBeers();
             var beersDTO = new List<BeerDTO>();
 
             foreach (var beer in beers)
             {
-                var brewery = _context.Brewery.First(b => b.Id == beer.BreweryId);
+                var brewery = _breweryRepository.getBreweryByID(beer.BreweryId);
 
                 beersDTO.Add(new BeerDTO
                 {
@@ -49,14 +49,14 @@ namespace BreweryApi.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<BeerDTO>> GetBeer(int id)
         {
-            var beer = await _context.Beer.FindAsync(id);
+            var beer = _beerRepository.getBeerByID(id);
 
             if (beer == null)
             {
                 return NotFound();
             }
 
-            var brewery = _context.Brewery.First(b => b.Id == beer.Id);
+            var brewery = _breweryRepository.getBreweryByID(beer.BreweryId);
 
             var dto = new BeerDTO
             {
@@ -83,15 +83,15 @@ namespace BreweryApi.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(beer).State = EntityState.Modified;
+            _beerRepository.UpdateBeer(beer);
 
             try
             {
-                await _context.SaveChangesAsync();
+                _beerRepository.SaveAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!BeerExists(id))
+                if (!_beerRepository.BeerExists(id))
                 {
                     return NotFound();
                 }
@@ -110,15 +110,10 @@ namespace BreweryApi.Controllers
         public async Task<ActionResult<Beer>> PostBeer(Beer beer)
         {
 
-            Brewery brewery = await _context.Brewery.FindAsync(beer.BreweryId);
-            if (brewery != null)
-            {
-                Console.WriteLine(brewery.Name);
-                _breweryService.AddBeerToBrewery(brewery, beer);
-            }
+            Brewery brewery = _breweryRepository.getBreweryByID(beer.BreweryId);
 
-            _context.Beer.Add(beer);
-            await _context.SaveChangesAsync();
+            _beerRepository.InsertBeer(beer);
+            _beerRepository.SaveAsync();
 
             return CreatedAtAction(nameof(GetBeer), new { id = beer.Id }, beer);
         }
@@ -127,21 +122,16 @@ namespace BreweryApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBeer(int id)
         {
-            var beer = await _context.Beer.FindAsync(id);
+            var beer = _beerRepository.getBeerByID(id);
             if (beer == null)
             {
                 return NotFound();
             }
 
-            _context.Beer.Remove(beer);
-            await _context.SaveChangesAsync();
+            _beerRepository.DeleteBeer(beer);
+            _beerRepository.SaveAsync();
 
             return NoContent();
-        }
-
-        private bool BeerExists(int id)
-        {
-            return _context.Beer.Any(e => e.Id == id);
         }
     }
 }

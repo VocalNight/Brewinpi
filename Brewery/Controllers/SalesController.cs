@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BreweryApi.Models;
+using BreweryApi.Repositories;
 
 namespace BreweryApi.Controllers
 {
@@ -8,25 +9,33 @@ namespace BreweryApi.Controllers
     [ApiController]
     public class SalesController : ControllerBase
     {
-        private readonly BreweryContext _context;
+        private readonly ISalesRepository _salesRepository;
+        private readonly IBreweryRepository _breweryRepository;
+        private readonly IBeerRepository _beerRepository;
+        private readonly IWholesalerRepository _wholesalerRepository;
 
-        public SalesController(BreweryContext context)
+        public SalesController( ISalesRepository repository, IBeerRepository beerRepository, IBreweryRepository breweryRepository, IWholesalerRepository wholesalerRepository )
         {
-            _context = context;
+            _salesRepository = repository;
+            _beerRepository = beerRepository;
+            _breweryRepository = breweryRepository;
+            _wholesalerRepository = wholesalerRepository;
         }
 
         // GET: api/Sales
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Sales>>> GetSales()
         {
-            return await _context.Sales.ToListAsync();
+
+            return (List<Sales>)_salesRepository.getSales();
+
         }
 
         // GET: api/Sales/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Sales>> GetSales(int id)
         {
-            var sales = await _context.Sales.FindAsync(id);
+            var sales = _salesRepository.getSaleByID(id);
 
             if (sales == null)
             {
@@ -46,15 +55,15 @@ namespace BreweryApi.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(sales).State = EntityState.Modified;
+            _salesRepository.UpdateSale(sales);
 
             try
             {
-                await _context.SaveChangesAsync();
+                _salesRepository.SaveAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!SalesExists(id))
+                if (!_salesRepository.SaleExists(id))
                 {
                     return NotFound();
                 }
@@ -69,13 +78,15 @@ namespace BreweryApi.Controllers
 
         // POST: api/Sales
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+
+        //TODO: Separate this method in a service class.
         [HttpPost]
         public async Task<ActionResult<Sales>> PostSales(Sales sales)
         {
 
-            var wholesaler = await _context.Wholesalers.FindAsync(sales.WholeSalerId);
-            var beer = await _context.Beer.FindAsync(sales.BeerId);
-            var brewery = await _context.Brewery.FindAsync(sales.BreweryId);
+            var wholesaler = _wholesalerRepository.getWholesalerByID(sales.WholeSalerId);
+            var beer = _beerRepository.getBeerByID(sales.BeerId);
+            var brewery = _breweryRepository.getBreweryByID(sales.BreweryId);
 
             if (brewery == null || beer == null)
             {
@@ -89,7 +100,7 @@ namespace BreweryApi.Controllers
 
             if (wholesaler != null)
             {
-                if (!_context.BeerWholesalers
+                if (!_wholesalerRepository.GetBeerWholesalerRelationships()
                     .Where(b => b.WholeSalerId == wholesaler.Id)
                     .Select(table => table.BeerId)
                     .Contains(sales.BeerId))
@@ -97,22 +108,26 @@ namespace BreweryApi.Controllers
                     return BadRequest("Wholesaler can't buy this beer");
                 }
 
-                int stock = _context.WholesalerStocks.Where(stock => stock.WholesalerId == wholesaler.Id).ToList()
+                int stock = _wholesalerRepository.GetWholesalerStocks()
+                    .Where(stock => stock.WholesalerId == wholesaler.Id).ToList()
                     .Select(stock => stock.StockQuantity)
                     .Aggregate((StockUsed, next) => StockUsed + next);
 
                 if (wholesaler.StockLimit < stock + sales.Quantity)
                 {
                     return BadRequest("The current sale exceeds the stock limit of the wholesaler");
+
                 } else
+
                 {
-                    var wholesaleStock = _context.WholesalerStocks.FirstOrDefault(w => w.WholesalerId == wholesaler.Id
+                    var wholesaleStock = _wholesalerRepository.GetWholesalerStocks()
+                    .FirstOrDefault(w => w.WholesalerId == wholesaler.Id
                     && w.BeerId == sales.BeerId);
 
                     if (wholesaleStock != null )
                     {
                         wholesaleStock.StockQuantity += sales.Quantity;
-                        await _context.SaveChangesAsync();
+                        _wholesalerRepository.SaveAsync();
                     }  
                 }
             } else
@@ -120,8 +135,7 @@ namespace BreweryApi.Controllers
                 return BadRequest("The wholesaler dosn't exist");
             }
 
-            _context.Sales.Add(sales);
-            await _context.SaveChangesAsync();
+            _salesRepository.InsertSale(sales);
 
             return CreatedAtAction("GetSales", new { id = sales.Id }, sales);
         }
@@ -130,21 +144,15 @@ namespace BreweryApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSales(int id)
         {
-            var sales = await _context.Sales.FindAsync(id);
+            var sales = _salesRepository.getSaleByID(id);
             if (sales == null)
             {
                 return NotFound();
             }
 
-            _context.Sales.Remove(sales);
-            await _context.SaveChangesAsync();
+            _salesRepository.DeleteSale(sales);
 
             return NoContent();
-        }
-
-        private bool SalesExists(int id)
-        {
-            return _context.Sales.Any(e => e.Id == id);
         }
     }
 }

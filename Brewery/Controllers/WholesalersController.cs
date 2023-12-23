@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BreweryApi.Models;
+using BreweryApi.Repositories;
 
 namespace BreweryApi.Controllers
 {
@@ -8,23 +9,32 @@ namespace BreweryApi.Controllers
     [ApiController]
     public class WholesalersController : ControllerBase
     {
-        private readonly BreweryContext _context;
+        private readonly ISalesRepository _salesRepository;
+        private readonly IWholesalerRepository _wholesalerRepository;
+        private readonly IBeerRepository _beerRepository;
 
-        public WholesalersController(BreweryContext context)
+        public WholesalersController( IWholesalerRepository repository, ISalesRepository salesRepository, IBeerRepository beerRepository )
         {
-            _context = context;
+            _wholesalerRepository = repository;
+            _salesRepository = salesRepository;
+            _beerRepository = beerRepository;
         }
 
         // GET: api/Wholesalers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Wholesaler>>> GetWholesalers()
         {
-            var wholesalers = await _context.Wholesalers.ToListAsync();
+            List<Wholesaler> wholesalers = (List<Wholesaler>)_wholesalerRepository.getWholesalers();
 
             foreach (Wholesaler wholesaler in wholesalers)
             {
-                wholesaler.Sales = _context.Sales.Where(s => s.WholeSalerId == wholesaler.Id).ToList();
-                wholesaler.Stocks = _context.WholesalerStocks.Where(s => s.WholesalerId == wholesaler.Id).ToList();
+                wholesaler.Sales = _salesRepository.GetAll()
+                    .Where(s => s.WholeSalerId == wholesaler.Id)
+                    .ToList();
+
+                wholesaler.Stocks = _wholesalerRepository.GetWholesalerStocks()
+                    .Where(s => s.WholesalerId == wholesaler.Id)
+                    .ToList();
             }
 
             return wholesalers;
@@ -34,15 +44,20 @@ namespace BreweryApi.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Wholesaler>> GetWholesaler(int id)
         {
-            var wholesaler = await _context.Wholesalers.FindAsync(id);
+            var wholesaler = _wholesalerRepository.getWholesalerByID(id);
 
             if (wholesaler == null)
             {
                 return NotFound();
             }
 
-            wholesaler.Sales = _context.Sales.Where(s => s.WholeSalerId == wholesaler.Id).ToList();
-            wholesaler.Stocks = _context.WholesalerStocks.Where(s => s.WholesalerId == wholesaler.Id).ToList();
+            wholesaler.Sales = _salesRepository.GetAll()
+                    .Where(s => s.WholeSalerId == wholesaler.Id)
+                    .ToList();
+
+            wholesaler.Stocks = _wholesalerRepository.GetWholesalerStocks()
+                .Where(s => s.WholesalerId == wholesaler.Id)
+                .ToList();
 
             return wholesaler;
         }
@@ -50,16 +65,16 @@ namespace BreweryApi.Controllers
         public async Task<ActionResult<string>> GetQuote(int wholesalerId, int beerId, int quantity)
         {
 
-            
-            var wholesaler = await _context.Wholesalers.FindAsync(wholesalerId);
-            var beer = await _context.Beer.FindAsync(beerId);
+
+            var wholesaler = _wholesalerRepository.getWholesalerByID(wholesalerId);
+            var beer = _beerRepository.getBeerByID(beerId);
 
             if (wholesaler == null || beer == null)
             {
                 return BadRequest("Beer or wholesaler don't exist");
             }
 
-            if (!_context.BeerWholesalers
+            if (!_wholesalerRepository.GetBeerWholesalerRelationships()
                     .Where(b => b.WholeSalerId == wholesaler.Id)
                     .Select(table => table.BeerId)
                     .Contains(beerId))
@@ -91,15 +106,15 @@ namespace BreweryApi.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(wholesaler).State = EntityState.Modified;
+            _wholesalerRepository.UpdateWholesaler(wholesaler);
 
             try
             {
-                await _context.SaveChangesAsync();
+                _wholesalerRepository.SaveAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!WholesalerExists(id))
+                if (!_wholesalerRepository.WholesalerExists(id))
                 {
                     return NotFound();
                 }
@@ -117,8 +132,7 @@ namespace BreweryApi.Controllers
         [HttpPost]
         public async Task<ActionResult<Wholesaler>> PostWholesaler(Wholesaler wholesaler)
         {
-            _context.Wholesalers.Add(wholesaler);
-            await _context.SaveChangesAsync();
+            _wholesalerRepository.InsertWholesaler(wholesaler);
 
             return CreatedAtAction("GetWholesaler", new { id = wholesaler.Id }, wholesaler);
         }
@@ -127,21 +141,15 @@ namespace BreweryApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteWholesaler(int id)
         {
-            var wholesaler = await _context.Wholesalers.FindAsync(id);
+            var wholesaler = _wholesalerRepository.getWholesalerByID(id);
             if (wholesaler == null)
             {
                 return NotFound();
             }
 
-            _context.Wholesalers.Remove(wholesaler);
-            await _context.SaveChangesAsync();
+            _wholesalerRepository.DeleteWholesaler(wholesaler);
 
             return NoContent();
-        }
-
-        private bool WholesalerExists(int id)
-        {
-            return _context.Wholesalers.Any(e => e.Id == id);
         }
     }
 }

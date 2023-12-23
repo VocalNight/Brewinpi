@@ -11,5 +11,8 @@ namespace BreweryApi.Repositories
         void DeleteBrewery(Brewery brewery);
         void UpdateBrewery( Brewery brewery );
         void Save();
+        void SaveAsync();
+        IEnumerable<Beer> GetBreweryBeers(Brewery brewery);
+        Boolean BreweryExists( int id );
     }
 }

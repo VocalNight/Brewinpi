@@ -1,4 +1,5 @@
 ﻿using BreweryApi.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace BreweryApi.Repositories
 {
@@ -14,32 +15,44 @@ namespace BreweryApi.Repositories
 
         public void DeleteBeer( Beer beer )
         {
-            throw new NotImplementedException();
+            _context.Beer.Remove(beer);
+            SaveAsync();
         }
 
-        public Brewery getBeerByID( int id )
+        public Beer getBeerByID( int id )
         {
-            throw new NotImplementedException();
+            return _context.Beer.Find(id);
         }
 
         public IEnumerable<Beer> getBeers()
         {
-            throw new NotImplementedException();
+            return _context.Beer.ToList();
         }
 
         public void InsertBeer( Beer beer )
         {
-            throw new NotImplementedException();
+            _context.Beer.Add(beer);
+            SaveAsync();
         }
 
         public void Save()
         {
-            throw new NotImplementedException();
+            _context.SaveChanges();
+        }
+
+        public void SaveAsync()
+        {
+            _context.SaveChangesAsync();
         }
 
         public void UpdateBeer( Beer beer )
         {
-            throw new NotImplementedException();
+            _context.Entry(beer).State = EntityState.Modified;
+        }
+
+        public Boolean BeerExists(int id)
+        {
+            return _context.Beer.Any(e => e.Id == id);
         }
     }
 }
