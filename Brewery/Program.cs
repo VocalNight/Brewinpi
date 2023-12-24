@@ -13,6 +13,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IBreweryRepository, BreweryRepository>();
 builder.Services.AddScoped<IBeerRepository, BeerRepository>();
+builder.Services.AddScoped<ISalesRepository, SalesRepository>();
+builder.Services.AddScoped<IWholesalerRepository, WholesalerRepository>();
 
 //This is how you add extra more DI's through application
 //builder.Services.AddScoped<BreweryService>();

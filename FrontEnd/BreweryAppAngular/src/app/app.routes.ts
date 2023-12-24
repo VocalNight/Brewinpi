@@ -6,6 +6,7 @@ import { WholesalerViewComponent } from './wholesaler-view/wholesaler-view.compo
 import { BrewEditComponent } from './EditViews/brew-edit/brew-edit.component';
 import { WholesalerEditComponent } from './EditViews/wholesaler-edit/wholesaler-edit.component';
 import { BreweryEditComponent } from './EditViews/brewery-edit/brewery-edit.component';
+import { SalesViewComponent } from './sales-view/sales-view.component';
 
 export const routes: Routes = [
     {
@@ -23,6 +24,10 @@ export const routes: Routes = [
     {
         path: 'Wholesalers',
         component: WholesalerViewComponent
+    },
+    {
+        path: 'Sales',
+        component: SalesViewComponent
     },
     {
         path: 'Beers/Add',
