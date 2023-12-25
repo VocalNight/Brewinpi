@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using BreweryApi.Models;
 using BreweryApi.Repositories;
+using BreweryApi.Models.DTOs;
+using AutoMapper;
 
 namespace BreweryApi.Controllers
 {
@@ -13,6 +15,7 @@ namespace BreweryApi.Controllers
         private readonly IBreweryRepository _breweryRepository;
         private readonly IBeerRepository _beerRepository;
         private readonly IWholesalerRepository _wholesalerRepository;
+        private readonly MapperConfiguration _mapperConfiguration;
 
         public SalesController( ISalesRepository repository, IBeerRepository beerRepository, IBreweryRepository breweryRepository, IWholesalerRepository wholesalerRepository )
         {
@@ -20,29 +23,53 @@ namespace BreweryApi.Controllers
             _beerRepository = beerRepository;
             _breweryRepository = breweryRepository;
             _wholesalerRepository = wholesalerRepository;
+
+            _mapperConfiguration = new MapperConfiguration(mapper => mapper.CreateMap<Sales, SaleDTO>());
         }
 
         // GET: api/Sales
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Sales>>> GetSales()
+        public async Task<ActionResult<IEnumerable<SaleDTO>>> GetSales()
         {
+            List<Sales> sales = (List<Sales>)_salesRepository.getSales();
+            List<SaleDTO> result = new List<SaleDTO>();
 
-            return (List<Sales>)_salesRepository.getSales();
+            var mapper = _mapperConfiguration.CreateMapper();
+
+            foreach (Sales sale in sales)
+            {
+                SaleDTO dto = mapper.Map<SaleDTO>(sale);
+
+                dto.Beer = _beerRepository.getBeerByID(sale.BeerId);
+                dto.Brewery = _breweryRepository.getBreweryByID(sale.BreweryId);
+                dto.Wholesaler = _wholesalerRepository.getWholesalerByID(sale.WholeSalerId);
+
+                result.Add(dto);
+            }
+
+            return result;
 
         }
 
         // GET: api/Sales/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Sales>> GetSales(int id)
+        public async Task<ActionResult<SaleDTO>> GetSales(int id)
         {
-            var sales = _salesRepository.getSaleByID(id);
+            var sale = (Sales)_salesRepository.getSaleByID(id);
 
-            if (sales == null)
+            if (sale == null)
             {
                 return NotFound();
             }
 
-            return sales;
+            var mapper = _mapperConfiguration.CreateMapper();
+            SaleDTO dto = mapper.Map<SaleDTO>(sale);
+
+            dto.Beer = _beerRepository.getBeerByID(sale.BeerId);
+            dto.Brewery = _breweryRepository.getBreweryByID(sale.BreweryId);
+            dto.Wholesaler = _wholesalerRepository.getWholesalerByID(sale.WholeSalerId);
+
+            return dto;
         }
 
         // PUT: api/Sales/5

@@ -9,12 +9,26 @@
             <th mat-header-cell *matHeaderCellDef> Quantity </th>
             <td mat-cell *matCellDef="let sales"> {{sales.quantity}} </td>
           </ng-container>
-    
+
+          <ng-container matColumnDef="beer">
+            <th mat-header-cell *matHeaderCellDef> Beer </th>
+            <td mat-cell *matCellDef="let sales"> {{sales.beer.name}} </td>
+          </ng-container>
+
+          <ng-container matColumnDef="wholesaler">
+            <th mat-header-cell *matHeaderCellDef> Wholesaler </th>
+            <td mat-cell *matCellDef="let sales"> {{sales.wholesaler.name}} </td>
+          </ng-container>
+
+          <ng-container matColumnDef="brewery">
+            <th mat-header-cell *matHeaderCellDef> Brewery </th>
+            <td mat-cell *matCellDef="let sales"> {{sales.brewery.name}} </td>
+          </ng-container>
+
           <ng-container matColumnDef="date">
             <th mat-header-cell *matHeaderCellDef> Date </th>
-            <td mat-cell *matCellDef="let sales"> {{sales.saleDate}} </td>
+            <td mat-cell *matCellDef="let sales"> {{sales.saleDate | date}} </td>
           </ng-container>
-    
     
           <tr mat-header-row *matHeaderRowDef="columnsToDisplay"></tr>
         <tr 

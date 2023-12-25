@@ -7,6 +7,7 @@ import { BrewEditComponent } from './EditViews/brew-edit/brew-edit.component';
 import { WholesalerEditComponent } from './EditViews/wholesaler-edit/wholesaler-edit.component';
 import { BreweryEditComponent } from './EditViews/brewery-edit/brewery-edit.component';
 import { SalesViewComponent } from './sales-view/sales-view.component';
+import { SaleEditComponent } from './EditViews/sale-edit/sale-edit.component';
 
 export const routes: Routes = [
     {
@@ -52,5 +53,9 @@ export const routes: Routes = [
     {
         path: 'Breweries/edit',
         component: BreweryEditComponent
-    }
+    },
+    {
+        path: 'Sales/Add',
+        component: SaleEditComponent
+    },
 ];
