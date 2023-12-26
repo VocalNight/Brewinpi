@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using BreweryApi.Models;
 using BreweryApi.Repositories;
+using Newtonsoft.Json;
 
 namespace BreweryApi.Controllers
 {
@@ -61,11 +62,9 @@ namespace BreweryApi.Controllers
 
             return wholesaler;
         }
-        [HttpGet("/Sale/beer={beerId}&quantity={quantity}&seller={wholesalerId}")]
+        [HttpGet("/api/Sale/beer={beerId}&quantity={quantity}&seller={wholesalerId}")]
         public async Task<ActionResult<string>> GetQuote(int wholesalerId, int beerId, int quantity)
         {
-
-
             var wholesaler = _wholesalerRepository.getWholesalerByID(wholesalerId);
             var beer = _beerRepository.getBeerByID(beerId);
 
@@ -93,7 +92,11 @@ namespace BreweryApi.Controllers
                 quotePrice = quotePrice - (quotePrice * (10 / 100));
             }
 
-            return $"The price for the quoted order from {wholesaler.Name} for {quantity} units of {beer.Name} will total at around {quotePrice}";
+            var result = $"The price for the quoted order from {wholesaler.Name} for {quantity} units of {beer.Name} will total at around {quotePrice}";
+            result = JsonConvert.SerializeObject(result);
+
+
+            return Content(result, "application/json");
         }
 
         // PUT: api/Wholesalers/5

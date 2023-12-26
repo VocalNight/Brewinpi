@@ -59,4 +59,11 @@ export class SaleEditComponent {
       this.wholesalers = result;
     });
   }
+
+  getQuote() {
+    this.breweryInfoService.getQuote(this.sale.beerId, this.sale.quantity, this.sale.wholesalerId)
+      .subscribe((result) => {
+        console.log(result)
+      });
+  }
 }

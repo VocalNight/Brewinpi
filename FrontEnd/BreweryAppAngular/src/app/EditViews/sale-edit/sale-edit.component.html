@@ -36,6 +36,7 @@
       </div>
 
     <button mat-raised-button color="primary"
-      type="submit"
       [disabled]="!brewForm.form.valid || isButtonDisabled">Create</button>
+
+      <button type="button" mat-raised-button color="secondary" (click)="getQuote()">Quote</button>
 </form>
