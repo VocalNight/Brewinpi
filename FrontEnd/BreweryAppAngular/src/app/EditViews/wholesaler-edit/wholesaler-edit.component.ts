@@ -39,15 +39,8 @@ export class WholesalerEditComponent {
       this.wholesaler.stocks = [];
       this.breweryPostService.updateItem(this.wholesaler, 'Wholesalers');
     } else {
-      this.breweryPostService.postItem(this.wholesaler, 'Wholesalers');
+      this.breweryPostService.postItem(this.wholesaler, 'Wholesalers', this.route);
     }
-
-    // Making sure the update is registered before going back to the table
-    setTimeout(() => 
-    {
-      this.route.navigate([`Wholesalers`]);
-    },
-      1000);
   }
 
   constructor(private breweryInfoService: BreweryInfoService, private breweryPostService: BreweryPostService, private route: Router) {

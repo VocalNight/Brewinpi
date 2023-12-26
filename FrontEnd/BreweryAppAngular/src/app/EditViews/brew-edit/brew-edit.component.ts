@@ -48,15 +48,8 @@ export class BrewEditComponent {
       delete this.beer.brewery;
       this.breweryPostService.updateItem(this.beer, 'Beers');
     } else {
-      this.breweryPostService.postItem(this.beer, 'Beers');
+      this.breweryPostService.postItem(this.beer, 'Beers', this.route);
     }
-
-    // Making sure the update is registered before going back to the table
-    setTimeout(() => 
-    {
-      this.route.navigate([`Beers`]);
-    },
-      1000);
   }
 
   constructor(private breweryInfoService: BreweryInfoService, private breweryPostService: BreweryPostService, private route: Router, private _snackBar: MatSnackBar) {

@@ -1,9 +1,17 @@
-import { Component } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {MatInputModule} from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatButtonModule} from '@angular/material/button';
+import {
+  MAT_DIALOG_DATA,
+  MatDialog,
+  MatDialogActions,
+  MatDialogClose,
+  MatDialogContent,
+  MatDialogTitle,
+} from '@angular/material/dialog';
 import { SalesClass } from '../../Models/SalesModel';
 import { BreweryInfoService } from '../../Services/brewery-info.service';
 import { BreweryPostService } from '../../Services/brewery-post.service';
@@ -32,21 +40,14 @@ export class SaleEditComponent {
     saleDate: new Date()
   };
 
-  onSubmit() {
-
-    this.isButtonDisabled = true;
-    this.breweryPostService.postItem(this.sale, 'Breweries');
-      setTimeout(() => 
-    {
-      this.route.navigate([`Breweries`]);
-    },
-      1000);
-    }
-  
-  constructor(private breweryInfoService: BreweryInfoService, private breweryPostService: BreweryPostService, private route: Router) {
+  constructor(private breweryInfoService: BreweryInfoService, private breweryPostService: BreweryPostService, private route: Router, public dialog: MatDialog) {
     this.getBeers();
     this.getWholesalers();
   }
+
+  onSubmit() {
+    this.breweryPostService.postItem(this.sale, 'Sales', this.route);
+    }
 
   getBeers() {
     this.breweryInfoService.getInfo('Beers').subscribe((result) => {
@@ -62,8 +63,21 @@ export class SaleEditComponent {
 
   getQuote() {
     this.breweryInfoService.getQuote(this.sale.beerId, this.sale.quantity, this.sale.wholesalerId)
-      .subscribe((result) => {
-        console.log(result)
+      .subscribe({
+        next: (result) => 
+          this.dialog.open(DialogQuote, { data: result}),
+
+        error: (e) => this.dialog.open(DialogQuote, {data: e.error})
       });
   }
+}
+
+@Component({
+  selector: 'dialog-quote',
+  templateUrl: 'dialog-quote.html',
+  standalone: true,
+  imports: [MatDialogTitle, MatDialogContent, MatDialogActions, MatDialogClose, MatButtonModule],
+})
+export class DialogQuote {
+  constructor(@Inject(MAT_DIALOG_DATA) public data: string) {}
 }

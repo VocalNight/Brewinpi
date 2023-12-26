@@ -1,5 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import {
+  MAT_DIALOG_DATA,
+  MatDialog,
+  MatDialogActions,
+  MatDialogClose,
+  MatDialogContent,
+  MatDialogTitle,
+} from '@angular/material/dialog';
+import { DialogQuote } from '../EditViews/sale-edit/sale-edit.component';
+import { Route, Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
@@ -8,13 +18,21 @@ export class BreweryPostService {
 
   private apiUrl = "https://localhost:7036/api"
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private dialog: MatDialog) { }
 
-  postItem(item: any, model: string) {
+  postItem(item: any, model: string, route: Router) {
     this.http.post(`${this.apiUrl}/${model}`, item)
       .subscribe({
-        next: (r) => console.log("Api sucess", r),
-        error: (e) => console.error("Api error", e)
+        next: (r) => {
+          setTimeout(() => 
+          {
+            route.navigate([model]);
+          },
+            1000);
+        },
+        error: (e) => { 
+          this.dialog.open(DialogQuote, {data: e.error})
+        }
       })
   }
 

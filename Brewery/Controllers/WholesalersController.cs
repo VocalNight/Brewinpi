@@ -68,35 +68,8 @@ namespace BreweryApi.Controllers
             var wholesaler = _wholesalerRepository.getWholesalerByID(wholesalerId);
             var beer = _beerRepository.getBeerByID(beerId);
 
-            if (wholesaler == null || beer == null)
-            {
-                return BadRequest("Beer or wholesaler don't exist");
-            }
-
-            if (!_wholesalerRepository.GetBeerWholesalerRelationships()
-                    .Where(b => b.WholeSalerId == wholesaler.Id)
-                    .Select(table => table.BeerId)
-                    .Contains(beerId))
-            {
-                return BadRequest("Wholesaler can't sell this beer");
-            }
-
-            decimal quotePrice = quantity * beer.BreweryPrice;
-
-            if (quantity > 20)
-            {
-                quotePrice = quotePrice - (quotePrice * (20 / 100));
-
-            } if (quantity > 10)
-            {
-                quotePrice = quotePrice - (quotePrice * (10 / 100));
-            }
-
-            var result = $"The price for the quoted order from {wholesaler.Name} for {quantity} units of {beer.Name} will total at around {quotePrice}";
-            result = JsonConvert.SerializeObject(result);
-
-
-            return Content(result, "application/json");
+            return ValidateRequest(wholesaler, beer, quantity);
+           
         }
 
         // PUT: api/Wholesalers/5
@@ -153,6 +126,40 @@ namespace BreweryApi.Controllers
             _wholesalerRepository.DeleteWholesaler(wholesaler);
 
             return NoContent();
+        }
+
+        private ActionResult<string> ValidateRequest(Wholesaler wholesaler, Beer beer, int quantity)
+        {
+            if (wholesaler == null || beer == null)
+            {
+                return BadRequest("Beer or wholesaler don't exist");
+            }
+
+            if (!_wholesalerRepository.GetBeerWholesalerRelationships()
+                    .Where(b => b.WholeSalerId == wholesaler.Id)
+                    .Select(table => table.BeerId)
+                    .Contains(beer.Id))
+            {
+                return BadRequest("Wholesaler can't sell this beer");
+            }
+
+            decimal quotePrice = quantity * beer.BreweryPrice;
+
+            if (quantity > 20)
+            {
+                quotePrice = quotePrice - (quotePrice * (20 / 100));
+
+            }
+            if (quantity > 10)
+            {
+                quotePrice = quotePrice - (quotePrice * (10 / 100));
+            }
+
+            var result = $"The price for the quoted order from {wholesaler.Name} for {quantity} units of {beer.Name} will total at around {quotePrice}";
+            result = JsonConvert.SerializeObject(result);
+
+
+            return Content(result, "application/json");
         }
     }
 }
