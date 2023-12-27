@@ -4,6 +4,7 @@ import {MatInputModule} from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatButtonModule} from '@angular/material/button';
+import {MatCheckboxModule} from '@angular/material/checkbox';
 import { WholesalerClass } from '../../Models/WholesalerModel';
 import { BreweryClass } from '../../Models/BreweryModel';
 import { BreweryInfoService } from '../../Services/brewery-info.service';
@@ -13,7 +14,7 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-wholesaler-edit',
   standalone: true,
-  imports: [FormsModule, MatInputModule, MatSelectModule, MatFormFieldModule, MatButtonModule],
+  imports: [FormsModule, MatInputModule, MatSelectModule, MatFormFieldModule, MatButtonModule, MatCheckboxModule],
   templateUrl: './wholesaler-edit.component.html',
   styleUrl: './wholesaler-edit.component.css'
 })
@@ -27,7 +28,8 @@ export class WholesalerEditComponent {
     name: '',
     stockLimit: 0,
     sales: [],
-    stocks: []
+    stocks: [],
+    allowedBeers: []
   };
 
   onSubmit() {

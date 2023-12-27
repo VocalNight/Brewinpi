@@ -13,6 +13,20 @@
         value="">
     </mat-form-field>
 
+    <mat-form-field>
+      <mat-label>Stock Limit</mat-label>
+      <input 
+        id="stockLimit"
+        #name="ngModel" 
+        required="true" 
+        matInput
+        type="number" 
+        placeholder="" 
+        name="stockLimit" 
+        [(ngModel)]="wholesaler.stockLimit" 
+        value="">
+    </mat-form-field>
+
     <button [hidden]="wholesaler.id != 0" mat-raised-button color="primary"
       type="submit"
       [disabled]="!brewForm.form.valid || isButtonDisabled">Create</button>

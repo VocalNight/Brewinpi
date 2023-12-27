@@ -10,6 +10,8 @@ import { BreweryClass } from '../../Models/BreweryModel';
 import { BreweryInfoService } from '../../Services/brewery-info.service';
 import { BreweryPostService } from '../../Services/brewery-post.service';
 import { BeerClass } from '../../Models/BeersModel';
+import { MatDialog } from '@angular/material/dialog';
+import { DialogQuote } from '../sale-edit/sale-edit.component';
 
 
 
@@ -34,12 +36,22 @@ export class BrewEditComponent {
     brewery: undefined
   };
 
+  constructor(private breweryInfoService: BreweryInfoService, private breweryPostService: BreweryPostService, private route: Router, private _snackBar: MatSnackBar, public dialog: MatDialog) {
+    this.breweryInfoService.getInfo('Breweries').subscribe((result) => {
+      this.breweries = result;
+    });
+
+    if (this.route.getCurrentNavigation()?.extras?.state != undefined){
+      this.beer = this.route.getCurrentNavigation()?.extras?.state!['beer'];
+    }
+  } 
+
   onSubmit() {
 
     this.isButtonDisabled = true;
 
     if (this.beer.breweryPrice <= 0) {
-      this._snackBar.open('You cant add a beer without price!');
+      this.dialog.open(DialogQuote, { data: 'You cant add a beer without price!'}),
       this.isButtonDisabled = false;
       return;
     }
@@ -52,13 +64,5 @@ export class BrewEditComponent {
     }
   }
 
-  constructor(private breweryInfoService: BreweryInfoService, private breweryPostService: BreweryPostService, private route: Router, private _snackBar: MatSnackBar) {
-    this.breweryInfoService.getInfo('Breweries').subscribe((result) => {
-      this.breweries = result;
-    });
 
-    if (this.route.getCurrentNavigation()?.extras?.state != undefined){
-      this.beer = this.route.getCurrentNavigation()?.extras?.state!['beer'];
-    }
-  } 
 }
