@@ -54,10 +54,13 @@ public class WholesalerRepository : IWholesalerRepository
         return _context.BeerWholesalers;
     }
 
-    public List<int> GetBeersSold(Wholesaler wholesaler)
+    public List<string?> GetBeersSold(Wholesaler wholesaler)
     {
-
-        return new List<int>();
+       return _context.Beer
+            .Where(b => wholesaler.AllowedBeersId
+            .Contains(b.Id))
+            .Select(b => b.Name).ToList();
+        
     }
 
     public DbSet<WholesalerStock> GetWholesalerStocks()

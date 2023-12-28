@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using BreweryApi.Models;
 using BreweryApi.Repositories;
 using Newtonsoft.Json;
+using AutoMapper;
+using BreweryApi.Models.DTOs;
 
 namespace BreweryApi.Controllers
 {
@@ -13,33 +15,44 @@ namespace BreweryApi.Controllers
         private readonly ISalesRepository _salesRepository;
         private readonly IWholesalerRepository _wholesalerRepository;
         private readonly IBeerRepository _beerRepository;
+        private readonly MapperConfiguration _mapperConfiguration;
 
         public WholesalersController( IWholesalerRepository repository, ISalesRepository salesRepository, IBeerRepository beerRepository )
         {
             _wholesalerRepository = repository;
             _salesRepository = salesRepository;
             _beerRepository = beerRepository;
+
+            _mapperConfiguration = new MapperConfiguration(mapper => mapper.CreateMap<Wholesaler, WholesalerDTO>());
         }
 
         // GET: api/Wholesalers
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Wholesaler>>> GetWholesalers()
+        public async Task<ActionResult<IEnumerable<WholesalerDTO>>> GetWholesalers()
         {
             List<Wholesaler> wholesalers = (List<Wholesaler>)_wholesalerRepository.getWholesalers();
+            List<WholesalerDTO> result = new List<WholesalerDTO>();
+
+            var mapper = _mapperConfiguration.CreateMapper();
 
             foreach (Wholesaler wholesaler in wholesalers)
             {
+                WholesalerDTO dto = mapper.Map<WholesalerDTO>(wholesaler);
 
-                wholesaler.Sales = _salesRepository.GetAll()
+                dto.Sales = _salesRepository.GetAll()
                     .Where(s => s.WholeSalerId == wholesaler.Id)
                     .ToList();
 
-                wholesaler.Stocks = _wholesalerRepository.GetWholesalerStocks()
+                dto.Stocks = _wholesalerRepository.GetWholesalerStocks()
                     .Where(s => s.WholesalerId == wholesaler.Id)
                     .ToList();
+
+                dto.AllowedBeersNames = _wholesalerRepository.GetBeersSold(wholesaler);
+
+                result.Add(dto);
             }
 
-            return wholesalers;
+            return result;
         }
 
         // GET: api/Wholesalers/5

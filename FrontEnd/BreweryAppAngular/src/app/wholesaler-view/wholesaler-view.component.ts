@@ -16,11 +16,12 @@ import { Router, RouterLink, RouterOutlet } from '@angular/router';
 })
 export class WholesalerViewComponent {
   wholesalers: WholesalerClass[] = [];
-  columnsToDisplay = ['id', 'name', 'stock'];
+  columnsToDisplay = ['id', 'name', 'stock', 'beers'];
   clickedWholesaler!: WholesalerClass;
 
   constructor(private breweryInfoService: BreweryInfoService, private breweryPostService: BreweryPostService, private router: Router) {
     this.getWholesalers();
+    console.log(this.wholesalers);
   } 
 
   deleteBrewery() {
@@ -28,8 +29,6 @@ export class WholesalerViewComponent {
     if (this.clickedWholesaler) {
       this.breweryPostService.deleteRow(this.clickedWholesaler.id, 'Wholesalers');
       this.wholesalers = this.wholesalers.filter(b => b.id !== this.clickedWholesaler.id)  
-    } else {
-
     }
   }
 
@@ -37,13 +36,17 @@ export class WholesalerViewComponent {
     if (this.clickedWholesaler) {
       let wholesaler = this.clickedWholesaler;
       this.router.navigate([`Wholesalers/edit`], { state: {wholesaler}});
-    }
-    
+    } 
+  }
+
+  getCurrentStock(wholesaler: WholesalerClass) {
+    return wholesaler.stocks?.reduce((total, stock) => total + stock.stockQuantity, 0)
   }
 
   getWholesalers() {
     this.breweryInfoService.getInfo('Wholesalers').subscribe((result) => {
       this.wholesalers = result;
+      console.log(this.wholesalers);
     });
   }
 }
