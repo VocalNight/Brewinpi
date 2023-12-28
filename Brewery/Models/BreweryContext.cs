@@ -35,9 +35,9 @@ namespace BreweryApi.Models
                 );
 
             modelBuilder.Entity<Wholesaler>().HasData(
-                new Wholesaler { Id = 1, Name = "Beer Dreams", StockLimit= 1000, Sales = new List<Sales>(), Stocks = new List<WholesalerStock>() },
-                new Wholesaler { Id = 2, Name = "Beerum", StockLimit= 800, Sales = new List<Sales>(), Stocks = new List<WholesalerStock>() },
-                new Wholesaler { Id = 3, Name = "Quantum Beers", StockLimit= 1500, Sales = new List<Sales>(), Stocks = new List<WholesalerStock>() }
+                new Wholesaler { Id = 1, Name = "Beer Dreams", StockLimit= 1000, Sales = new List<Sales>(), Stocks = new List<WholesalerStock>(), AllowedBeersId = [1] },
+                new Wholesaler { Id = 2, Name = "Beerum", StockLimit= 800, Sales = new List<Sales>(), Stocks = new List<WholesalerStock>(), AllowedBeersId = [1,2,3] },
+                new Wholesaler { Id = 3, Name = "Quantum Beers", StockLimit= 1500, Sales = new List<Sales>(), Stocks = new List<WholesalerStock>(), AllowedBeersId = [1,3] }
                 );
 
             modelBuilder.Entity<Sales>().HasData(

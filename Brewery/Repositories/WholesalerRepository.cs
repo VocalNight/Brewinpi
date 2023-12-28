@@ -54,6 +54,12 @@ public class WholesalerRepository : IWholesalerRepository
         return _context.BeerWholesalers;
     }
 
+    public List<int> GetBeersSold(Wholesaler wholesaler)
+    {
+
+        return new List<int>();
+    }
+
     public DbSet<WholesalerStock> GetWholesalerStocks()
     {
         return _context.WholesalerStocks;

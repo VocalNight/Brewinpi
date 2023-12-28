@@ -29,6 +29,7 @@ namespace BreweryApi.Controllers
 
             foreach (Wholesaler wholesaler in wholesalers)
             {
+
                 wholesaler.Sales = _salesRepository.GetAll()
                     .Where(s => s.WholeSalerId == wholesaler.Id)
                     .ToList();
@@ -135,10 +136,7 @@ namespace BreweryApi.Controllers
                 return BadRequest("Beer or wholesaler don't exist");
             }
 
-            if (!_wholesalerRepository.GetBeerWholesalerRelationships()
-                    .Where(b => b.WholeSalerId == wholesaler.Id)
-                    .Select(table => table.BeerId)
-                    .Contains(beer.Id))
+            if (!wholesaler.AllowedBeersId.Contains(beer.Id))
             {
                 return BadRequest("Wholesaler can't sell this beer");
             }

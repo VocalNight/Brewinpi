@@ -27,6 +27,15 @@
         value="">
     </mat-form-field>
 
+    <mat-form-field>
+      <mat-label>Beers</mat-label>
+      <mat-select [(value)]="this.wholesaler.allowedBeersId" multiple>
+        @for (beer of beers; track beer) {
+          <mat-option [value]="beer.id">{{beer.name}}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
     <button [hidden]="wholesaler.id != 0" mat-raised-button color="primary"
       type="submit"
       [disabled]="!brewForm.form.valid || isButtonDisabled">Create</button>

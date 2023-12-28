@@ -16,7 +16,7 @@ import { Router, RouterLink, RouterOutlet } from '@angular/router';
 })
 export class WholesalerViewComponent {
   wholesalers: WholesalerClass[] = [];
-  columnsToDisplay = ['id', 'name'];
+  columnsToDisplay = ['id', 'name', 'stock'];
   clickedWholesaler!: WholesalerClass;
 
   constructor(private breweryInfoService: BreweryInfoService, private breweryPostService: BreweryPostService, private router: Router) {

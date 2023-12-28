@@ -15,5 +15,6 @@ namespace BreweryApi.Repositories
         Boolean WholesalerExists( int id );
         DbSet<BeerWholesaler> GetBeerWholesalerRelationships();
         DbSet<WholesalerStock> GetWholesalerStocks();
+        List<int> GetBeersSold( Wholesaler wholesaler );
     }
 }

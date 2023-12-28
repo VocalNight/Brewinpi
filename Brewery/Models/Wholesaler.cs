@@ -10,5 +10,7 @@
         public List<Sales> Sales { get; set; }
 
         public List<WholesalerStock> Stocks { get; set; }
+
+        public List<int> AllowedBeersId { get; set; }
     }
 }
