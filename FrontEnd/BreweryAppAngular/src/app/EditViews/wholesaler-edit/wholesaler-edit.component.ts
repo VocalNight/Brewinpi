@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import {FormsModule, NonNullableFormBuilder} from '@angular/forms';
+import {FormsModule} from '@angular/forms';
 import {MatInputModule} from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -10,6 +10,8 @@ import { BreweryInfoService } from '../../Services/brewery-info.service';
 import { BreweryPostService } from '../../Services/brewery-post.service';
 import { Router } from '@angular/router';
 import { BeerClass } from '../../Models/BeersModel';
+import { DialogQuote } from '../sale-edit/sale-edit.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-wholesaler-edit',
@@ -19,7 +21,6 @@ import { BeerClass } from '../../Models/BeersModel';
   styleUrl: './wholesaler-edit.component.css'
 })
 export class WholesalerEditComponent {
-
   isButtonDisabled: boolean = false;
   itemId: number = 0;
   beers: BeerClass[] = [];
@@ -33,9 +34,21 @@ export class WholesalerEditComponent {
     allowedBeersId: []
   };
 
+  constructor(private breweryInfoService: BreweryInfoService, private breweryPostService: BreweryPostService, private route: Router, public dialog: MatDialog) {
+    this.getBeers();
+    if (this.route.getCurrentNavigation()?.extras?.state != undefined){
+      this.wholesaler = this.route.getCurrentNavigation()?.extras?.state!['wholesaler'];
+    }
+  }
+
   onSubmit() {
-    console.log(this.wholesaler);
     this.isButtonDisabled = true;
+
+    if (this.wholesaler.stockLimit <= 0) {
+      this.dialog.open(DialogQuote, { data: 'You cant add a wholesaler without a stock limit!'}),
+      this.isButtonDisabled = false;
+      return;
+    }
 
     if (this.wholesaler.id != 0) {
       this.wholesaler.sales = [];
@@ -46,14 +59,6 @@ export class WholesalerEditComponent {
     }
   }
 
-  constructor(private breweryInfoService: BreweryInfoService, private breweryPostService: BreweryPostService, private route: Router) {
-    this.getBeers();
-    if (this.route.getCurrentNavigation()?.extras?.state != undefined){
-      this.wholesaler = this.route.getCurrentNavigation()?.extras?.state!['wholesaler'];
-    }
-    console.log(this.wholesaler);
-  }
-  
   getBeers() {
     this.breweryInfoService.getInfo('Beers').subscribe((result) => {
       this.beers = result;

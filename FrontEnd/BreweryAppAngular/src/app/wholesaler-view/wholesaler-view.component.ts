@@ -6,6 +6,9 @@ import {MatDividerModule} from '@angular/material/divider';
 import {MatButtonModule} from '@angular/material/button';
 import { BreweryPostService } from '../Services/brewery-post.service';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { BeerClass } from '../Models/BeersModel';
+import { StockViewComponent } from './stock-view/stock-view.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-wholesaler-view',
@@ -19,9 +22,8 @@ export class WholesalerViewComponent {
   columnsToDisplay = ['id', 'name', 'stock', 'beers'];
   clickedWholesaler!: WholesalerClass;
 
-  constructor(private breweryInfoService: BreweryInfoService, private breweryPostService: BreweryPostService, private router: Router) {
+  constructor(private breweryInfoService: BreweryInfoService, private breweryPostService: BreweryPostService, private router: Router, public dialog: MatDialog) {
     this.getWholesalers();
-    console.log(this.wholesalers);
   } 
 
   deleteBrewery() {
@@ -46,7 +48,24 @@ export class WholesalerViewComponent {
   getWholesalers() {
     this.breweryInfoService.getInfo('Wholesalers').subscribe((result) => {
       this.wholesalers = result;
-      console.log(this.wholesalers);
     });
+  }
+
+  checkStock() {
+    let stocks: { beerName: any; quantity: number; }[] = [];
+
+    if (this.clickedWholesaler) {
+      this.clickedWholesaler.stocks?.forEach(stock => {
+        this.breweryInfoService.getInfo('Beers', stock.beerId).subscribe(beer => {
+          stocks.push(
+            {
+              beerName: beer.name,
+              quantity: stock.stockQuantity
+            }
+          )
+        })
+      })
+    }
+    this.dialog.open(StockViewComponent, {data: stocks})
   }
 }
