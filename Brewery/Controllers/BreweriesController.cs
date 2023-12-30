@@ -1,5 +1,6 @@
 ﻿using BreweryApi.Models;
 using BreweryApi.Repositories;
+using BreweryApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,33 +10,25 @@ namespace BreweryApi.Controllers
     [ApiController]
     public class BreweriesController : ControllerBase
     {
-        private IBreweryRepository _breweryRepository;
+        private BreweryService _breweryService;
 
-        public BreweriesController( IBreweryRepository breweryRepository )
+        public BreweriesController( BreweryService breweryService )
         {
-            _breweryRepository = breweryRepository;
+            _breweryService = breweryService;
         }
 
         // GET: api/Breweries
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Brewery>>> GetBrewery()
         {
-            List<Brewery> Breweries = (List<Brewery>)_breweryRepository.getBreweries();
-
-            foreach(var brewery in Breweries)
-            {
-                brewery.Beers = (ICollection<Beer>)_breweryRepository.GetBreweryBeers(brewery);
-            }
-
-            return Breweries;
+            return _breweryService.GetBreweries();
         }
 
         // GET: api/Breweries/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Brewery>> GetBrewery(int id)
         {
-            var brewery = _breweryRepository.getBreweryByID(id);
-            brewery.Beers = (ICollection<Beer>)_breweryRepository.GetBreweryBeers(brewery);
+            var brewery = _breweryService.GetBrewery(id);
 
             if (brewery == null)
             {
@@ -55,15 +48,15 @@ namespace BreweryApi.Controllers
                 return BadRequest();
             }
 
-            _breweryRepository.UpdateBrewery(brewery);
+            _breweryService.UpdateBrewery(brewery);
 
             try
             {
-                _breweryRepository.SaveAsync();
+                _breweryService.SaveDb();
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!_breweryRepository.BreweryExists(id))
+                if (!_breweryService.BreweryExsists(id))
                 {
                     return NotFound();
                 }
@@ -81,7 +74,7 @@ namespace BreweryApi.Controllers
         [HttpPost]
         public async Task<ActionResult<Brewery>> PostBrewery(Brewery brewery)
         {
-            _breweryRepository.InsertBrewery(brewery);
+            _breweryService.InsertBrewery(brewery);
 
             return CreatedAtAction("GetBrewery", new { id = brewery.Id }, brewery);
         }
@@ -90,13 +83,14 @@ namespace BreweryApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBrewery(int id)
         {
-            var brewery = _breweryRepository.getBreweryByID(id);
+            var brewery = _breweryService.GetBrewery(id);
+
             if (brewery == null)
             {
                 return NotFound();
             }
 
-            _breweryRepository.DeleteBrewery(brewery);
+            _breweryService.DeleteBrewery(brewery);
 
             return NoContent();
         }

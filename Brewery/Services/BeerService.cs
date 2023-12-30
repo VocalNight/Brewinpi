@@ -81,13 +81,13 @@ namespace BreweryApi.Services
         public void DeleteBeer(Beer beer)
         {
             _beerRepository.DeleteBeer(beer);
-            _beerRepository.SaveAsync();
+            SaveDb();
         }
 
         public void InsertBeer(Beer beer)
         {
             _beerRepository.InsertBeer(beer);
-            _beerRepository.SaveAsync();
+            SaveDb();
         }
 
         public void UpdateBeer(Beer beer)
