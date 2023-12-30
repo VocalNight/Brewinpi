@@ -1,5 +1,4 @@
 ﻿using BreweryApi.Models;
-using BreweryApi.Repositories;
 using BreweryApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
