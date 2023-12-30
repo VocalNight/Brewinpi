@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using BreweryApi.Models;
 using BreweryApi.Models.DTOs;
 using BreweryApi.Repositories;
+using BreweryApi.Services;
 
 namespace BreweryApi.Controllers
 {
@@ -10,67 +11,30 @@ namespace BreweryApi.Controllers
     [ApiController]
     public class BeersController : ControllerBase
     {
-        private readonly IBeerRepository _beerRepository;
-        private readonly IBreweryRepository _breweryRepository;
+        private readonly BeerService _beerService;
 
-        public BeersController(IBeerRepository beerRepository, IBreweryRepository breweryRepository)
+        public BeersController(BeerService beerService)
         {
-            _beerRepository = beerRepository;
-            _breweryRepository = breweryRepository;
+            _beerService = beerService;
         }
 
         // GET: api/Beers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<BeerDTO>>> GetBeer()
         {
-            var beers = _beerRepository.getBeers();
-            var beersDTO = new List<BeerDTO>();
-
-            foreach (var beer in beers)
-            {
-                var brewery = _breweryRepository.getBreweryByID(beer.BreweryId);
-
-                beersDTO.Add(new BeerDTO
-                {
-                    Id = beer.Id,
-                    Name = beer.Name,
-                    Age = beer.Age,
-                    Brewery = brewery,
-                    BreweryId = beer.BreweryId,
-                    BreweryPrice = beer.BreweryPrice,
-                    Flavour = beer.Flavour
-                });
-            }
-
-            return beersDTO;
+            return _beerService.GetBeers();
         }
 
         // GET: api/Beers/5
         [HttpGet("{id}")]
         public async Task<ActionResult<BeerDTO>> GetBeer(int id)
         {
-            var beer = _beerRepository.getBeerByID(id);
+            var result = _beerService.GetBeer(id);
 
-            if (beer == null)
-            {
-                return NotFound();
-            }
+            if ( result == null) { return NotFound(); }
 
-            var brewery = _breweryRepository.getBreweryByID(beer.BreweryId);
+            return result;
 
-            var dto = new BeerDTO
-            {
-
-                Id = beer.Id,
-                Name = beer.Name,
-                Age = beer.Age,
-                Brewery = brewery,
-                BreweryId = beer.BreweryId,
-                BreweryPrice = beer.BreweryPrice,
-                Flavour = beer.Flavour
-            };
-
-            return dto;
         }
 
         // PUT: api/Beers/5
@@ -83,15 +47,15 @@ namespace BreweryApi.Controllers
                 return BadRequest();
             }
 
-            _beerRepository.UpdateBeer(beer);
+            _beerService.UpdateBeer(beer);
 
             try
             {
-                _beerRepository.SaveAsync();
+                _beerService.SaveDb();
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!_beerRepository.BeerExists(id))
+                if (!_beerService.BeerExsists(id))
                 {
                     return NotFound();
                 }
@@ -109,11 +73,7 @@ namespace BreweryApi.Controllers
         [HttpPost]
         public async Task<ActionResult<Beer>> PostBeer(Beer beer)
         {
-
-            Brewery brewery = _breweryRepository.getBreweryByID(beer.BreweryId);
-
-            _beerRepository.InsertBeer(beer);
-            _beerRepository.SaveAsync();
+            _beerService.InsertBeer(beer);
 
             return CreatedAtAction(nameof(GetBeer), new { id = beer.Id }, beer);
         }
@@ -122,14 +82,14 @@ namespace BreweryApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBeer(int id)
         {
-            var beer = _beerRepository.getBeerByID(id);
+            var beer = _beerService.GetBeer(id);
+
             if (beer == null)
             {
                 return NotFound();
             }
 
-            _beerRepository.DeleteBeer(beer);
-            _beerRepository.SaveAsync();
+            _beerService.DeleteBeer(beer);
 
             return NoContent();
         }

@@ -6,7 +6,6 @@ import {MatDividerModule} from '@angular/material/divider';
 import {MatButtonModule} from '@angular/material/button';
 import { BreweryPostService } from '../Services/brewery-post.service';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
-import { BeerClass } from '../Models/BeersModel';
 import { StockViewComponent } from './stock-view/stock-view.component';
 import { MatDialog } from '@angular/material/dialog';
 
@@ -55,8 +54,11 @@ export class WholesalerViewComponent {
     let stocks: { beerName: any; quantity: number; }[] = [];
 
     if (this.clickedWholesaler) {
-      this.clickedWholesaler.stocks?.forEach(stock => {
-        this.breweryInfoService.getInfo('Beers', stock.beerId).subscribe(beer => {
+      this.clickedWholesaler.stocks
+      ?.forEach(stock => {
+        this.breweryInfoService
+        .getInfo('Beers', stock.beerId)
+        .subscribe(beer => {
           stocks.push(
             {
               beerName: beer.name,
