@@ -30,3 +30,53 @@ All requisites have been taken care off, the challenge requisites were also all 
 - Add integrations tests using a real test database. These will ensure data is still added corrected when the codebase changes. The test database must be created and deleted for each test.
 - Create a separate project with a front-end of your choice. Provide instructions on how to run it.
 
+### The Api
+
+#### BackEnd and BackEnd Tests
+
+1. Clone the project, open the solution with visual studio and run the application.
+2. You can also run the tests by right clicking the solution and choosing "run tests"
+
+#### FrontEnd and FrontEnd Tests
+
+1. Clone the project, go to *FrontEnd\BreweryAppAngular* and run "ng serve"
+2. For the jasmine tests, go to the same folder and run "ng test" 
+
+
+### Challenges and what was learned
+
+This project was very fun to do!
+
+I feel the back end was very straightforward to do but i definetly slowed down when i got to the front end part. Its interesting but i don't really like doing all the setup of pages and CSS.
+That said it was refreshing re-learning angular with their new update that came out a few weeks ago, so taking this project at this time was probably beneficial. 
+I will probably stick with angular for most thigns and just learn the necessary for react. 
+
+Will still do projects with it but typescript and the way angular organizes things is really good, 
+especially with the new update where you don't need to have the central file for all your imports and now everything is component based.
+
+I tried to make the project use the repository pattern but i didn't really felt the need to add the service classes for the controllers at first, but when i was refactoring the tests i noticed how many injections i needed to do for each controller, 
+so i refactored it so that the controllers only needed the service injection to simplify the test preparation.
+
+There was also some difficulty regarding the new way .NET API projects work, the new way is using the program.cs file instead of the old startup.cs file, so a lot of ways to add middleware and how to make the system recognize your injections took some googling.
+
+Figuring out how to organize the database took some time too but i feel i did a good job with it.
+I also had to use DTO's to send especialized data to the API/frontEnd but i'm not sure they were used correctly or if my implementation is the best practice, definetly something that would probably begood to have someone more experienced to take a look at.
+
+#### Tests
+
+The main challenges i feel were actually writing tests? I feel that test documentation is something that is sorely lacking overall. Test documentantions and examples only do simple examples like "testing a calculator" 
+and most courses or tuorials for the language gloss over that topic a LOT. I believe tests and knolowdge about tests are something that everyone looks for in projects and new hires but the material is really lacking on that front.
+
+I did write tests to what i feel was encessary, but i'll definetly need to keep improving on that front for future projects.
+
+
+#### Main takeaways
+
+Overall i feel this project was a good first challenge to do and a way to put some of my C# knowlowdge to the test.
+I definetly feel i improved but there's still somethings i would like to work on more like delegates, didn't use that a lot here. 
+LINQ was very fun to use along with EF but i could definetly go deeper with both of these things.
+
+I worked with angular before so most of it was familiar, the new stuff definetly made it a better experience to use than before.
+Testing took a while to grasp, but when i understood the framework better it was interesting to write some tests. Definetly something i also need to work a lot on though.
+
+Tahnks for reading!
