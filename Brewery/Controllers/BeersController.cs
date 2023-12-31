@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using BreweryApi.Models;
 using BreweryApi.Models.DTOs;
-using BreweryApi.Repositories;
 using BreweryApi.Services;
 
 namespace BreweryApi.Controllers

@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BreweryApi.Models;
-using BreweryApi.Repositories;
 using Newtonsoft.Json;
-using AutoMapper;
 using BreweryApi.Models.DTOs;
 using BreweryApi.Services;
 

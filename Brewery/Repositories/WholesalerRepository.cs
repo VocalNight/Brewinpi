@@ -49,18 +49,12 @@ public class WholesalerRepository : IWholesalerRepository
         _context.Entry(wholesaler).State = EntityState.Modified;
     }
 
-    public DbSet<BeerWholesaler> GetBeerWholesalerRelationships()
-    {
-        return _context.BeerWholesalers;
-    }
-
     public List<string?> GetBeersSold(Wholesaler wholesaler)
     {
        return _context.Beer
             .Where(b => wholesaler.AllowedBeersId
             .Contains(b.Id))
-            .Select(b => b.Name).ToList();
-        
+            .Select(b => b.Name).ToList();    
     }
 
     public DbSet<WholesalerStock> GetWholesalerStocks()

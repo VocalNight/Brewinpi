@@ -1,5 +1,4 @@
 ﻿using BreweryApi.Models;
-using Microsoft.AspNetCore.Mvc;
 
 namespace BreweryApi.Repositories
 {

@@ -2,7 +2,6 @@
 using BreweryApi.Models.DTOs;
 using BreweryApi.Models;
 using BreweryApi.Repositories;
-using Microsoft.EntityFrameworkCore;
 
 namespace BreweryApi.Services
 {
@@ -78,7 +77,7 @@ namespace BreweryApi.Services
             return wholesaler.StockLimit > stock + sale.Quantity;
         }
 
-        public void InsertSale( Wholesaler wholesaler, Sales sale )
+        public async Task InsertSale( Wholesaler wholesaler, Sales sale )
         {
             var wholesaleStock = _wholesalerRepository.GetWholesalerStocks()
                     .FirstOrDefault(w =>
@@ -91,7 +90,7 @@ namespace BreweryApi.Services
                 _wholesalerRepository.SaveAsync();
             }
 
-            _salesRepository.InsertSale(sale);
+            await _salesRepository.InsertSale(sale);
         }
 
         public List<SaleDTO> GetSalesDTO( List<Sales> sales )

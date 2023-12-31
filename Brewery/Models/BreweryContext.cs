@@ -15,13 +15,6 @@ namespace BreweryApi.Models
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<BeerWholesaler>().HasData(
-                new BeerWholesaler { Id = 1, BeerId = 1, WholeSalerId = 1 },
-                new BeerWholesaler { Id = 2, BeerId = 2, WholeSalerId = 1 },
-                new BeerWholesaler { Id = 3, BeerId = 2, WholeSalerId = 2 },
-                new BeerWholesaler { Id = 4, BeerId = 3, WholeSalerId = 3 }
-                );
-
             modelBuilder.Entity<Brewery>().HasData(
                 new Brewery { Id = 1, Name = "Malter", Beers = new List<Beer>() },
                 new Brewery { Id = 2, Name = "Holing", Beers = new List<Beer>() },
@@ -60,6 +53,5 @@ namespace BreweryApi.Models
         public DbSet<Sales> Sales { get; set; }
         public DbSet<Wholesaler> Wholesalers { get; set; }
         public DbSet<WholesalerStock> WholesalerStocks { get; set; }
-        public DbSet<BeerWholesaler> BeerWholesalers { get; set; }
     }
 }

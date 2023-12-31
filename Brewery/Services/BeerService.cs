@@ -1,8 +1,6 @@
 ﻿using BreweryApi.Models;
 using BreweryApi.Models.DTOs;
 using BreweryApi.Repositories;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace BreweryApi.Services
 {

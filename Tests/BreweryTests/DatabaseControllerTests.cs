@@ -1,5 +1,7 @@
 using BreweryApi.Controllers;
 using BreweryApi.Models;
+using BreweryApi.Repositories;
+using BreweryApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,6 +11,16 @@ namespace BreweryTests
     public class DatabaseControllerTests : IDisposable
     {
         private readonly BreweryContext _dbContext;
+
+        private readonly WholesalerRepository _wholesalerRepository;
+        private readonly BeerRepository _beerRepository;
+        private readonly SalesRepository _salesRepository;
+        private readonly BreweryRepository _breweryRepository;
+        private readonly WholesalerStockRepository _wholesalerStockRepository;
+
+        private readonly SalesService _salesService;
+        private readonly WholesalerService _wholesalerService;
+
         private readonly SalesController _saleController;
         private readonly WholesalersController _wholesalerController;
 
@@ -19,8 +31,18 @@ namespace BreweryTests
             .Options;
 
             _dbContext = new BreweryContext(options);
-            _saleController = new SalesController(_dbContext);
-            _wholesalerController = new WholesalersController(_dbContext);
+
+            _wholesalerStockRepository = new WholesalerStockRepository(_dbContext);
+            _wholesalerRepository = new WholesalerRepository(_dbContext);
+            _beerRepository = new BeerRepository(_dbContext);
+            _salesRepository = new SalesRepository(_dbContext);
+            _breweryRepository = new BreweryRepository(_dbContext);
+
+            _salesService = new SalesService(_salesRepository, _beerRepository, _breweryRepository, _wholesalerRepository);
+            _wholesalerService = new WholesalerService(_wholesalerRepository, _salesRepository, _beerRepository, _wholesalerStockRepository);
+
+            _saleController = new SalesController(_salesService);
+            _wholesalerController = new WholesalersController(_wholesalerService);
 
             _dbContext.Database.EnsureDeleted();
             _dbContext.Database.EnsureCreated();
@@ -35,7 +57,7 @@ namespace BreweryTests
         public async Task TestCase_Fail_If_WholesalerNotBuyingAssignedBeer()
         {
 
-            var sale = new Sales { BeerId = 1, BreweryId = 1, Quantity = 1, SaleDate = new DateTime(), WholeSalerId = 3 };
+            var sale = new Sales { BeerId = 2, BreweryId = 2, Quantity = 1, SaleDate = new DateTime(), WholeSalerId = 3 };
 
             await _saleController.PostSales(sale);
 
@@ -143,12 +165,12 @@ namespace BreweryTests
         public async Task TestCase_Pass_If_QuoteValid()
         {
 
-            ActionResult<string> quoteResult = await _wholesalerController.GetQuote(1, 1, 100);
-            string q = quoteResult.Value;
+            var quoteResult = await _wholesalerController.GetQuote(1, 1, 100);
+            ContentResult quote = (ContentResult)quoteResult.Result;
 
-            string valid = "The price for the quoted order from Beer Dreams for 100 units of Malt will total at around 1500,00";
+            string valid = "\"The price for the quoted order from Beer Dreams for 100 units of Malt will total at around 1500,00\"";
 
-            Assert.True(q == valid);
+            Assert.True(quote.Content == valid);
         }
     }
 }

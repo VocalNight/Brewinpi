@@ -7,7 +7,7 @@ namespace BreweryApi.Repositories
     {
         IEnumerable<Sales> getSales();
         Sales getSaleByID( int id );
-        void InsertSale( Sales sales );
+        Task InsertSale( Sales sales );
         void DeleteSale( Sales sales );
         void UpdateSale( Sales sales );
         void Save();

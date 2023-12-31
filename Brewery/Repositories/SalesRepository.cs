@@ -34,10 +34,10 @@ namespace BreweryApi.Repositories
             return _context.Sales.ToList();
         }
 
-        public void InsertSale( Sales sale )
+        public async Task InsertSale( Sales sale )
         {
-            _context.Sales.Add(sale);
-            SaveAsync();
+            await _context.Sales.AddAsync(sale);
+            await _context.SaveChangesAsync();
         }
 
         public bool SaleExists( int id )

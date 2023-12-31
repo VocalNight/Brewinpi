@@ -72,7 +72,7 @@ namespace BreweryApi.Controllers
                 return BadRequest("The current sale exceeds the stock limit of the wholesaler");
             }
 
-            _salesService.InsertSale(saleInformation.wholesaler, sales);
+            await _salesService.InsertSale(saleInformation.wholesaler, sales);
 
             return CreatedAtAction("GetSales", new { id = sales.Id }, sales);
         }

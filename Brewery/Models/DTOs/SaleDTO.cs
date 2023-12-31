@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace BreweryApi.Models.DTOs
+﻿namespace BreweryApi.Models.DTOs
 {
     public class SaleDTO
     {
