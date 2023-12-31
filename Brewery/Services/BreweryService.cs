@@ -41,13 +41,11 @@ namespace BreweryApi.Services
         public void DeleteBrewery( Brewery brewery )
         {
             _breweryRepository.DeleteBrewery(brewery);
-            SaveDb();
         }
 
         public void InsertBrewery( Brewery brewery )
         {
             _breweryRepository.InsertBrewery(brewery);
-            SaveDb();
         }
 
         public void UpdateBrewery( Brewery brewery )

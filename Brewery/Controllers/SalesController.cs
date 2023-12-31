@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using BreweryApi.Models;
-using BreweryApi.Repositories;
 using BreweryApi.Models.DTOs;
-using AutoMapper;
+using BreweryApi.Services;
 
 namespace BreweryApi.Controllers
 {
@@ -11,113 +9,47 @@ namespace BreweryApi.Controllers
     [ApiController]
     public class SalesController : ControllerBase
     {
-        private readonly ISalesRepository _salesRepository;
-        private readonly IBreweryRepository _breweryRepository;
-        private readonly IBeerRepository _beerRepository;
-        private readonly IWholesalerRepository _wholesalerRepository;
-        private readonly MapperConfiguration _mapperConfiguration;
+        private readonly SalesService _salesService;
 
-        public SalesController( ISalesRepository repository, IBeerRepository beerRepository, IBreweryRepository breweryRepository, IWholesalerRepository wholesalerRepository )
+        public SalesController( SalesService salesService )
         {
-            _salesRepository = repository;
-            _beerRepository = beerRepository;
-            _breweryRepository = breweryRepository;
-            _wholesalerRepository = wholesalerRepository;
-
-            _mapperConfiguration = new MapperConfiguration(mapper => mapper.CreateMap<Sales, SaleDTO>());
+            _salesService = salesService;
         }
 
         // GET: api/Sales
         [HttpGet]
         public async Task<ActionResult<IEnumerable<SaleDTO>>> GetSales()
         {
-            List<Sales> sales = (List<Sales>)_salesRepository.getSales();
-            List<SaleDTO> result = new List<SaleDTO>();
+            List<Sales> sales = _salesService.GetSales();
 
-            var mapper = _mapperConfiguration.CreateMapper();
-
-            foreach (Sales sale in sales)
-            {
-                SaleDTO dto = mapper.Map<SaleDTO>(sale);
-
-                dto.Beer = _beerRepository.getBeerByID(sale.BeerId);
-                dto.Brewery = _breweryRepository.getBreweryByID(sale.BreweryId);
-                dto.Wholesaler = _wholesalerRepository.getWholesalerByID(sale.WholeSalerId);
-
-                result.Add(dto);
-            }
-
-            return result;
-
+            return _salesService.GetSalesDTO(sales);
         }
 
         // GET: api/Sales/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<SaleDTO>> GetSales(int id)
+        public async Task<ActionResult<SaleDTO>> GetSales( int id )
         {
-            var sale = (Sales)_salesRepository.getSaleByID(id);
+            var sale = _salesService.GetSale(id);
 
             if (sale == null)
             {
                 return NotFound();
             }
 
-            var mapper = _mapperConfiguration.CreateMapper();
-            SaleDTO dto = mapper.Map<SaleDTO>(sale);
-
-            dto.Beer = _beerRepository.getBeerByID(sale.BeerId);
-            dto.Brewery = _breweryRepository.getBreweryByID(sale.BreweryId);
-            dto.Wholesaler = _wholesalerRepository.getWholesalerByID(sale.WholeSalerId);
-
-            return dto;
-        }
-
-        // PUT: api/Sales/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutSales(int id, Sales sales)
-        {
-            if (id != sales.Id)
-            {
-                return BadRequest();
-            }
-
-            _salesRepository.UpdateSale(sales);
-
-            try
-            {
-                _salesRepository.SaveAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_salesRepository.SaleExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            return _salesService.GetSaleDTO(sale);
         }
 
         // POST: api/Sales
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-
-        //TODO: Separate this method in a service class.
         [HttpPost]
-        public async Task<ActionResult<Sales>> PostSales(Sales sales)
+        public async Task<ActionResult<Sales>> PostSales( Sales sales )
         {
 
-            var wholesaler = _wholesalerRepository.getWholesalerByID(sales.WholeSalerId);
-            var beer = _beerRepository.getBeerByID(sales.BeerId);
-            var brewery = _breweryRepository.getBreweryByID(sales.BreweryId);
+            (Wholesaler wholesaler, Brewery brewery, Beer beer) saleInformation = _salesService.GetSalesInformation(sales);
 
-            if (brewery == null || beer == null)
+            if (saleInformation.brewery == null || saleInformation.beer == null)
             {
-                return BadRequest("Brewery or beer don't exist");
+                return BadRequest("Brewery or beer don't exist or weren't informed");
             }
 
             if (sales.Quantity <= 0)
@@ -125,59 +57,38 @@ namespace BreweryApi.Controllers
                 return BadRequest("You can't make a sale without informing the quantity");
             }
 
-            if (wholesaler != null)
+            if (saleInformation.wholesaler == null)
             {
-                if (!_wholesalerRepository.GetBeerWholesalerRelationships()
-                    .Where(b => b.WholeSalerId == wholesaler.Id)
-                    .Select(table => table.BeerId)
-                    .Contains(sales.BeerId))
-                {
-                    return BadRequest("Wholesaler can't buy this beer");
-                }
-
-                int stock = _wholesalerRepository.GetWholesalerStocks()
-                    .Where(stock => stock.WholesalerId == wholesaler.Id).ToList()
-                    .Select(stock => stock.StockQuantity)
-                    .Aggregate((StockUsed, next) => StockUsed + next);
-
-                if (wholesaler.StockLimit < stock + sales.Quantity)
-                {
-                    return BadRequest("The current sale exceeds the stock limit of the wholesaler");
-
-                } else
-
-                {
-                    var wholesaleStock = _wholesalerRepository.GetWholesalerStocks()
-                    .FirstOrDefault(w => w.WholesalerId == wholesaler.Id
-                    && w.BeerId == sales.BeerId);
-
-                    if (wholesaleStock != null )
-                    {
-                        wholesaleStock.StockQuantity += sales.Quantity;
-                        _wholesalerRepository.SaveAsync();
-                    }  
-                }
-            } else
-            {
-                return BadRequest("The wholesaler dosn't exist");
+                return BadRequest("Wholesaler not informed or dosn't exist. Please check again");
             }
 
-            _salesRepository.InsertSale(sales);
+            if (!_salesService.CanWholesalerSellBeer(saleInformation.wholesaler, sales))
+            {
+                return BadRequest("Wholesaler can't buy this beer");
+            }
+
+            if (!_salesService.WholesalerHasSpaceInStock(saleInformation.wholesaler, sales))
+            {
+                return BadRequest("The current sale exceeds the stock limit of the wholesaler");
+            }
+
+            _salesService.InsertSale(saleInformation.wholesaler, sales);
 
             return CreatedAtAction("GetSales", new { id = sales.Id }, sales);
         }
 
+
         // DELETE: api/Sales/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteSales(int id)
+        public async Task<IActionResult> DeleteSales( int id )
         {
-            var sales = _salesRepository.getSaleByID(id);
+            var sales = _salesService.GetSale(id);
             if (sales == null)
             {
                 return NotFound();
             }
 
-            _salesRepository.DeleteSale(sales);
+            _salesService.DeleteSale(sales);
 
             return NoContent();
         }

@@ -1,5 +1,6 @@
 using BreweryApi.Models;
 using BreweryApi.Repositories;
+using BreweryApi.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +16,11 @@ builder.Services.AddScoped<IBreweryRepository, BreweryRepository>();
 builder.Services.AddScoped<IBeerRepository, BeerRepository>();
 builder.Services.AddScoped<ISalesRepository, SalesRepository>();
 builder.Services.AddScoped<IWholesalerRepository, WholesalerRepository>();
+builder.Services.AddScoped<IWholesalerStockRepository, WholesalerStockRepository>();
+builder.Services.AddScoped<BreweryService>();
+builder.Services.AddScoped<BeerService>();
+builder.Services.AddScoped<SalesService>();
+builder.Services.AddScoped<WholesalerService>();
 
 //This is how you add extra more DI's through application
 //builder.Services.AddScoped<BreweryService>();

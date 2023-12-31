@@ -28,10 +28,10 @@ public class WholesalerRepository : IWholesalerRepository
         return _context.Wholesalers.ToList();
     }
 
-    public void InsertWholesaler( Wholesaler wholesaler )
+    public async Task InsertWholesaler( Wholesaler wholesaler )
     {
-        _context.Wholesalers.Add(wholesaler);
-        SaveAsync();
+        await _context.Wholesalers.AddAsync(wholesaler);
+        await _context.SaveChangesAsync();
     }
 
     public void Save()

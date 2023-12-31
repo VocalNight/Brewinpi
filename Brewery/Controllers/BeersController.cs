@@ -29,7 +29,7 @@ namespace BreweryApi.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<BeerDTO>> GetBeer(int id)
         {
-            var result = _beerService.GetBeer(id);
+            var result = _beerService.GetBeerDTO(id);
 
             if ( result == null) { return NotFound(); }
 

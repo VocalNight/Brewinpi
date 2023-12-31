@@ -5,6 +5,7 @@ using BreweryApi.Repositories;
 using Newtonsoft.Json;
 using AutoMapper;
 using BreweryApi.Models.DTOs;
+using BreweryApi.Services;
 
 namespace BreweryApi.Controllers
 {
@@ -12,78 +13,50 @@ namespace BreweryApi.Controllers
     [ApiController]
     public class WholesalersController : ControllerBase
     {
-        private readonly ISalesRepository _salesRepository;
-        private readonly IWholesalerRepository _wholesalerRepository;
-        private readonly IBeerRepository _beerRepository;
-        private readonly MapperConfiguration _mapperConfiguration;
+        private readonly WholesalerService _wholesalerService;
 
-        public WholesalersController( IWholesalerRepository repository, ISalesRepository salesRepository, IBeerRepository beerRepository )
+        public WholesalersController( WholesalerService wholesalerService )
         {
-            _wholesalerRepository = repository;
-            _salesRepository = salesRepository;
-            _beerRepository = beerRepository;
-
-            _mapperConfiguration = new MapperConfiguration(mapper => mapper.CreateMap<Wholesaler, WholesalerDTO>());
+            _wholesalerService = wholesalerService;
         }
 
         // GET: api/Wholesalers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<WholesalerDTO>>> GetWholesalers()
         {
-            List<Wholesaler> wholesalers = (List<Wholesaler>)_wholesalerRepository.getWholesalers();
-            List<WholesalerDTO> result = new List<WholesalerDTO>();
+            List<Wholesaler> wholesalers = _wholesalerService.GetWholesalers();
 
-            var mapper = _mapperConfiguration.CreateMapper();
-
-            foreach (Wholesaler wholesaler in wholesalers)
-            {
-                WholesalerDTO dto = mapper.Map<WholesalerDTO>(wholesaler);
-
-                dto.Sales = _salesRepository.GetAll()
-                    .Where(s => s.WholeSalerId == wholesaler.Id)
-                    .ToList();
-
-                dto.Stocks = _wholesalerRepository.GetWholesalerStocks()
-                    .Where(s => s.WholesalerId == wholesaler.Id)
-                    .ToList();
-
-                dto.AllowedBeersNames = _wholesalerRepository.GetBeersSold(wholesaler);
-
-                result.Add(dto);
-            }
-
-            return result;
+            return _wholesalerService.GetWholesalerDTOs(wholesalers);            
         }
 
         // GET: api/Wholesalers/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Wholesaler>> GetWholesaler(int id)
         {
-            var wholesaler = _wholesalerRepository.getWholesalerByID(id);
+            var wholesaler = _wholesalerService.GetWholesaler(id);
 
             if (wholesaler == null)
             {
                 return NotFound();
             }
 
-            wholesaler.Sales = _salesRepository.GetAll()
-                    .Where(s => s.WholeSalerId == wholesaler.Id)
-                    .ToList();
-
-            wholesaler.Stocks = _wholesalerRepository.GetWholesalerStocks()
-                .Where(s => s.WholesalerId == wholesaler.Id)
-                .ToList();
-
             return wholesaler;
         }
+
         [HttpGet("/api/Sale/beer={beerId}&quantity={quantity}&seller={wholesalerId}")]
         public async Task<ActionResult<string>> GetQuote(int wholesalerId, int beerId, int quantity)
         {
-            var wholesaler = _wholesalerRepository.getWholesalerByID(wholesalerId);
-            var beer = _beerRepository.getBeerByID(beerId);
+            (bool valid, string message) quote = _wholesalerService.CalculateQuote(wholesalerId, beerId, quantity);
 
-            return ValidateRequest(wholesaler, beer, quantity);
-           
+            if (!quote.valid)
+            {
+                return BadRequest(quote.message);
+            }
+
+            var messageJson = JsonConvert.SerializeObject(quote.message);
+
+            return Content(messageJson, "application/json");
+
         }
 
         // PUT: api/Wholesalers/5
@@ -96,15 +69,15 @@ namespace BreweryApi.Controllers
                 return BadRequest();
             }
 
-            _wholesalerRepository.UpdateWholesaler(wholesaler);
+            await _wholesalerService.UpdateWholesaler(wholesaler);
 
             try
             {
-                _wholesalerRepository.SaveAsync();
+                _wholesalerService.SaveDb();
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!_wholesalerRepository.WholesalerExists(id))
+                if (!_wholesalerService.WholesalerExists(id))
                 {
                     return NotFound();
                 }
@@ -122,7 +95,7 @@ namespace BreweryApi.Controllers
         [HttpPost]
         public async Task<ActionResult<Wholesaler>> PostWholesaler(Wholesaler wholesaler)
         {
-            _wholesalerRepository.InsertWholesaler(wholesaler);
+            await _wholesalerService.InsertWholesaler(wholesaler);
 
             return CreatedAtAction("GetWholesaler", new { id = wholesaler.Id }, wholesaler);
         }
@@ -131,46 +104,15 @@ namespace BreweryApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteWholesaler(int id)
         {
-            var wholesaler = _wholesalerRepository.getWholesalerByID(id);
+            var wholesaler = _wholesalerService.GetWholesaler(id);
             if (wholesaler == null)
             {
                 return NotFound();
             }
 
-            _wholesalerRepository.DeleteWholesaler(wholesaler);
+            _wholesalerService.DeleteWholesaler(wholesaler);
 
             return NoContent();
-        }
-
-        private ActionResult<string> ValidateRequest(Wholesaler wholesaler, Beer beer, int quantity)
-        {
-            if (wholesaler == null || beer == null)
-            {
-                return BadRequest("Beer or wholesaler don't exist");
-            }
-
-            if (!wholesaler.AllowedBeersId.Contains(beer.Id))
-            {
-                return BadRequest("Wholesaler can't sell this beer");
-            }
-
-            decimal quotePrice = quantity * beer.BreweryPrice;
-
-            if (quantity > 20)
-            {
-                quotePrice = quotePrice - (quotePrice * (20 / 100));
-
-            }
-            if (quantity > 10)
-            {
-                quotePrice = quotePrice - (quotePrice * (10 / 100));
-            }
-
-            var result = $"The price for the quoted order from {wholesaler.Name} for {quantity} units of {beer.Name} will total at around {quotePrice}";
-            result = JsonConvert.SerializeObject(result);
-
-
-            return Content(result, "application/json");
         }
     }
 }

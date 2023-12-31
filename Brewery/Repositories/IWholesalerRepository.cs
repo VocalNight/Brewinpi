@@ -7,7 +7,7 @@ namespace BreweryApi.Repositories
     {
         IEnumerable<Wholesaler> getWholesalers();
         Wholesaler getWholesalerByID( int id );
-        void InsertWholesaler( Wholesaler wholesaler );
+        Task InsertWholesaler( Wholesaler wholesaler );
         void DeleteWholesaler( Wholesaler wholesaler );
         void UpdateWholesaler( Wholesaler wholesaler );
         void Save();
