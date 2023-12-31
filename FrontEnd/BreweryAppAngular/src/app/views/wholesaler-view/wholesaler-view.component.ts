@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
-import { WholesalerClass } from '../Models/WholesalerModel';
-import { BreweryInfoService } from '../Services/brewery-info.service';
 import {MatTableModule} from '@angular/material/table';
 import {MatDividerModule} from '@angular/material/divider';
 import {MatButtonModule} from '@angular/material/button';
-import { BreweryPostService } from '../Services/brewery-post.service';
+import { MatDialog } from '@angular/material/dialog';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { StockViewComponent } from './stock-view/stock-view.component';
-import { MatDialog } from '@angular/material/dialog';
+import { WholesalerClass } from '../../Models/WholesalerModel';
+import { BreweryInfoService } from '../../Services/brewery-info.service';
+import { BreweryPostService } from '../../Services/brewery-post.service';
 
 @Component({
   selector: 'app-wholesaler-view',

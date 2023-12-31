@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
-import { SalesClass } from '../Models/SalesModel';
+import { SalesClass } from '../../Models/SalesModel';
 import {MatTableModule} from '@angular/material/table';
 import {MatDividerModule} from '@angular/material/divider';
 import {MatButtonModule} from '@angular/material/button';
-import { BreweryInfoService } from '../Services/brewery-info.service';
+import { BreweryInfoService } from '../../Services/brewery-info.service';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterOutlet } from '@angular/router';
 

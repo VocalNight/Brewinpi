@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
-import { BreweryInfoService } from '../Services/brewery-info.service';
-import { BeerClass } from '../Models/BeersModel';
 import {MatTableModule} from '@angular/material/table';
 import {MatDividerModule} from '@angular/material/divider';
 import {MatButtonModule} from '@angular/material/button';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
-import { BreweryPostService } from '../Services/brewery-post.service';
+import { BeerClass } from '../../Models/BeersModel';
+import { BreweryInfoService } from '../../Services/brewery-info.service';
+import { BreweryPostService } from '../../Services/brewery-post.service';
 
 @Component({
   selector: 'app-beer-view',
