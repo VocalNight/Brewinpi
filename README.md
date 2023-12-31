@@ -54,8 +54,8 @@ I will probably stick with angular for most thigns and just learn the necessary 
 Will still do projects with it but typescript and the way angular organizes things is really good, 
 especially with the new update where you don't need to have the central file for all your imports and now everything is component based.
 
-I tried to make the project use the repository pattern but i didn't really felt the need to add the service classes for the controllers at first, but when i was refactoring the tests i noticed how many injections i needed to do for each controller, 
-so i refactored it so that the controllers only needed the service injection to simplify the test preparation.
+I tried to make the project use the repository pattern but i didn't really felt the need to add the service classes for the controllers at first, but when i was refactoring the tests and some of the controllers to have the functionality i need i realized why they are so necessary.
+My controllers started getting bloated and was necessary to separate the functionality of validation and inserting.
 
 There was also some difficulty regarding the new way .NET API projects work, the new way is using the program.cs file instead of the old startup.cs file, so a lot of ways to add middleware and how to make the system recognize your injections took some googling.
 
